@@ -1,32 +1,37 @@
 import FreeSimpleGUI as sg
-from processor import load_ip_list, process_configs
+from config_processor import process_configs
+from ip_manager import load_ip_list, save_used_ips
 
 
 def run_gui():
+    sg.theme("DarkGrey5")
+
     layout = [
-        [sg.Text("IP List File:"), sg.Input(), sg.FileBrowse(key="ip_file")],
-        [sg.Text("Config Folder:"), sg.Input(),
-         sg.FolderBrowse(key="config_folder")],
-        [sg.Text("Output Folder:"), sg.Input(),
-         sg.FolderBrowse(key="output_folder")],
-        [sg.Button("Start"), sg.Button("Exit")],
-        [sg.Output(size=(80, 20))]
+        [sg.Text("WireGuard Config Folder"), sg.InputText(
+            key="CONFIG_FOLDER"), sg.FolderBrowse()],
+        [sg.Text("IP List File (.txt)"), sg.InputText(
+            key="IP_FILE"), sg.FileBrowse()],
+        [sg.Button("Process"), sg.Button("Exit")]
     ]
 
     window = sg.Window("WireGuard IP Replacer", layout)
 
     while True:
         event, values = window.read()
-        if event in (sg.WINDOW_CLOSED, "Exit"):
+
+        if event == sg.WIN_CLOSED or event == "Exit":
             break
 
-        if event == "Start":
+        if event == "Process":
+            config_folder = values["CONFIG_FOLDER"]
+            ip_file = values["IP_FILE"]
+
             try:
-                ip_list = load_ip_list(values["ip_file"])
-                for file, ip in process_configs(ip_list, values["config_folder"], values["output_folder"]):
-                    print(f"✅ {file} → {ip}")
-                print("🎉 All done.")
+                ip_list = load_ip_list(ip_file)
+                result = process_configs(config_folder, ip_list)
+                sg.popup("Processing Completed",
+                         f"{result['processed']} files updated.\n{result['skipped']} files skipped.")
             except Exception as e:
-                print(f"❌ Error: {e}")
+                sg.popup_error(f"Error: {str(e)}")
 
     window.close()

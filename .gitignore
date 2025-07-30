@@ -1,0 +1,5 @@
+# Ignore Python cache folders and files
+__pycache__/
+*.py[cod]
+*.pyo
+.venv

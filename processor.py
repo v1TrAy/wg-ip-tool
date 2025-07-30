@@ -11,8 +11,16 @@ def list_config_files(config_folder):
     return [f for f in os.listdir(config_folder) if f.endswith('.conf')]
 
 
-def replace_ip_in_config(content, new_ip, port=51820):
-    return re.sub(r'Endpoint\s*=\s*[\d.]+:\d+', f'Endpoint = {new_ip}:{port}', content)
+def replace_ip_in_config(content, raw_input_ip, default_port=51820):
+    # Check if IP already includes a port
+    if ':' in raw_input_ip:
+        ip, port = raw_input_ip.split(':')
+    else:
+        ip = raw_input_ip
+        port = str(default_port)
+
+    # Replace the Endpoint line properly
+    return re.sub(r'Endpoint\s*=\s*[\d.]+:\d+', f'Endpoint = {ip}:{port}', content)
 
 
 def process_configs(ip_list, config_folder, output_folder, port=51820):
